@@ -1,0 +1,32 @@
+{
+    "programs": [
+
+    ],
+    "streams": [
+        {
+            "index": 0,
+            "codec_name": "aac",
+            "codec_type": "audio",
+            "r_frame_rate": "0/0",
+            "avg_frame_rate": "0/0",
+            "duration": "22.640000",
+            "bit_rate": "128144"
+        },
+        {
+            "index": 1,
+            "codec_name": "h264",
+            "codec_type": "video",
+            "width": 1596,
+            "height": 720,
+            "r_frame_rate": "30000/1001",
+            "avg_frame_rate": "135800/4531",
+            "duration": "22.655000",
+            "bit_rate": "4792726"
+        }
+    ],
+    "format": {
+        "duration": "22.655000",
+        "size": "13976349",
+        "bit_rate": "4935369"
+    }
+}
