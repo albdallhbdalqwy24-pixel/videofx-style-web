@@ -62,7 +62,8 @@ def process(job_id, source, output):
         # Visual-only chain: dimensions, orientation and frame timing are not changed.
         # Reference-match grade: natural PUBG contrast, controlled saturation, clean highlights,
         # warm weapon/skin tones, light denoise and moderate edge clarity.
-        vf = "hqdn3d=1.2:1.2:2.4:2.4,eq=contrast=0.98:brightness=0.006:saturation=0.94:gamma=1.02,colorbalance=rs=0.015:gs=0.006:bs=-0.008,split=2[base][bloom];[bloom]gblur=sigma=4,eq=brightness=0.02[glow];[base][glow]blend=all_mode=screen:all_opacity=0.06,unsharp=7:7:0.38:7:7:0,format=yuv420p"
+        # Strong 100% reference-match grade: clearly visible color, clarity and VFX bloom.
+        vf = "hqdn3d=1.0:1.0:1.8:1.8,eq=contrast=1.10:brightness=0.010:saturation=1.10:gamma=1.035,colorbalance=rs=0.030:gs=0.012:bs=-0.018,split=2[base][bloom];[bloom]gblur=sigma=3,eq=brightness=0.06:saturation=1.08[glow];[base][glow]blend=all_mode=screen:all_opacity=0.16,unsharp=7:7:0.78:7:7:0.12,format=yuv420p"
         source_rate = meta.get("bitrate_mbps") or 6
         maxrate = max(3.0, min(20.0, source_rate * 1.12))
         command = [
