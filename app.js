@@ -1,4 +1,4 @@
-const API_BASE = "https://boqased-alyafai-tiktok-studio.onrender.com";
+const API_BASE = ""; // المعالجة محلية بالكامل داخل Termux
 const input = document.querySelector("#fileInput");
 const dropzone = document.querySelector("#dropzone");
 const fileCard = document.querySelector("#fileCard");
@@ -51,7 +51,7 @@ async function processVideo() {
     const meta = await probe.json();
     if (!meta.ok) throw new Error(meta.error || "تعذر تحليل الملف.");
     setProgress(18, `تم التحليل: ${meta.width || "؟"}×${meta.height || "؟"} — بدء تطبيق الستايل...`);
-    const startForm = new FormData(); startForm.append("file", selectedFile, selectedFile.name); startForm.append("mode", "style"); startForm.append("profile", "pubg_clean_clarity"); startForm.append("fps", "preserve");
+    const startForm = new FormData(); startForm.append("file", selectedFile, selectedFile.name);
     const startResponse = await request(`${API_BASE}/start`, { method: "POST", body: startForm });
     const start = await startResponse.json();
     if (!start.job) throw new Error(start.error || "لم تبدأ المعالجة.");
