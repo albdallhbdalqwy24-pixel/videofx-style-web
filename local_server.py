@@ -60,10 +60,9 @@ def process(job_id, source, output):
         meta = probe(source)
         update(job_id, state="processing", progress=5, message="تطبيق الفلاتر والحدة والنعومة محلياً...")
         # Visual-only chain: dimensions, orientation and frame timing are not changed.
-        # Reference-match grade: natural PUBG contrast, controlled saturation, clean highlights,
-        # warm weapon/skin tones, light denoise and moderate edge clarity.
-        # Strong 100% reference-match grade: clearly visible color, clarity and VFX bloom.
-        vf = "hqdn3d=1.0:1.0:1.8:1.8,eq=contrast=1.10:brightness=0.010:saturation=1.10:gamma=1.035,colorbalance=rs=0.030:gs=0.012:bs=-0.018,split=2[base][bloom];[bloom]gblur=sigma=3,eq=brightness=0.06:saturation=1.08[glow];[base][glow]blend=all_mode=screen:all_opacity=0.16,unsharp=7:7:0.78:7:7:0.12,format=yuv420p"
+        # Specialized 96618 Filter: Dark Cinematic Horror/Action Style.
+        # High contrast, crushed blacks, desaturated (monochromatic feel), film grain, and edge sharpening.
+        vf = "hqdn3d=1.5:1.5:3.0:3.0,eq=contrast=1.45:brightness=-0.08:saturation=0.15:gamma=0.9,unsharp=7:7:1.2:7:7:0.5,noise=alls=12:allf=t+u,format=yuv420p"
         source_rate = meta.get("bitrate_mbps") or 6
         maxrate = max(3.0, min(20.0, source_rate * 1.12))
         command = [
