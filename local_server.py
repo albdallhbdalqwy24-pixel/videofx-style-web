@@ -60,9 +60,11 @@ def process(job_id, source, output):
         meta = probe(source)
         update(job_id, state="processing", progress=5, message="تطبيق الفلاتر والحدة والنعومة محلياً...")
         # Visual-only chain: dimensions, orientation and frame timing are not changed.
-        vf = "hqdn3d=1.0:1.0:2.0:2.0,eq=contrast=1.16:saturation=1.18:brightness=0.01,unsharp=5:5:0.55:5:5:0,format=yuv420p"
+        # Reference-match grade: natural PUBG contrast, controlled saturation, clean highlights,
+        # warm weapon/skin tones, light denoise and moderate edge clarity.
+        vf = "hqdn3d=1.2:1.2:2.4:2.4,eq=contrast=0.98:brightness=0.006:saturation=0.94:gamma=1.02,colorbalance=rs=0.015:gs=0.006:bs=-0.008,split=2[base][bloom];[bloom]gblur=sigma=4,eq=brightness=0.02[glow];[base][glow]blend=all_mode=screen:all_opacity=0.06,unsharp=7:7:0.38:7:7:0,format=yuv420p"
         source_rate = meta.get("bitrate_mbps") or 6
-        maxrate = max(3.0, min(16.0, source_rate * 1.18))
+        maxrate = max(3.0, min(20.0, source_rate * 1.12))
         command = [
             "ffmpeg", "-hide_banner", "-y", "-i", str(source), "-map", "0:v:0", "-map", "0:a?",
             "-vf", vf, "-c:v", "libx264", "-preset", "superfast", "-crf", "17",
