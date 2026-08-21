@@ -58,13 +58,15 @@ def update(job_id, **values):
 def process(job_id, source, output):
     try:
         meta = probe(source)
-        update(job_id, state="processing", progress=5, message="تطبيق فلتر 96625 السينمائي محلياً...")
+        update(job_id, state="processing", progress=5, message="إنشاء مؤثرات 96625 تلقائياً من الفيديو محلياً...")
         # Visual-only chain: dimensions, orientation and frame timing are not changed.
-        # Reference 96625: monochrome Film Noir grade with crushed blacks,
-        # lifted highlights, soft edge treatment, grain and vignette.
-        vf = "format=gray,eq=contrast=1.50:brightness=-0.05:saturation=0,curves=all='0/0 0.2/0.05 0.5/0.5 0.8/0.95 1/1',noise=alls=15:allf=t+u,vignette=angle=PI/4,format=yuv420p"
+        # Generated VFX pipeline: every layer is created from the incoming video.
+        # No reference frames are copied. It creates silhouette-like blacks, highlight bloom,
+        # mist softness, a restrained edge halo, grain and vignette in the same pass.
+        vf = "format=gray,eq=contrast=1.78:brightness=-0.10:saturation=0:gamma=0.84,curves=all='0/0 0.16/0.00 0.34/0.08 0.55/0.50 0.76/1 1/1',colorlevels=romin=0.035:romax=0.97,split=3[base][bloom][mist];[bloom]gblur=sigma=7,eq=brightness=0.12[glow];[mist]gblur=sigma=15,eq=brightness=0.035[mistfx];[base][glow]blend=all_mode=screen:all_opacity=0.18[lit];[lit][mistfx]blend=all_mode=screen:all_opacity=0.06,unsharp=7:7:0.66:7:7:0.12,noise=alls=10:allf=t+u,vignette=angle=PI/5,format=yuv420p"
         source_rate = meta.get("bitrate_mbps") or 6
         maxrate = max(3.0, min(20.0, source_rate * 1.12))
+        output.unlink(missing_ok=True)
         command = [
             "ffmpeg", "-hide_banner", "-y", "-i", str(source), "-map", "0:v:0", "-map", "0:a?",
             "-vf", vf, "-c:v", "libx264", "-preset", "superfast", "-crf", "17",
@@ -78,7 +80,7 @@ def process(job_id, source, output):
                 try:
                     seconds = int(line.split("=", 1)[1]) / 1_000_000
                     progress = min(94, 5 + int(seconds / max(meta["duration"], 0.1) * 89))
-                    update(job_id, progress=progress, message="جاري تطبيق فلتر 96625 محلياً...")
+                    update(job_id, progress=progress, message="جاري توليد مؤثرات 96625 من الفيديو...")
                 except ValueError:
                     pass
         if process.wait() != 0 or not output.exists():
@@ -148,7 +150,7 @@ class Handler(BaseHTTPRequestHandler):
             if self.path == "/probe":
                 self.send_json({"ok": True, **probe(source)}); return
             job_id = uuid.uuid4().hex
-            output = ROOT / f"{Path(filename).stem}_VideoFX_Style.mp4"
+            output = ROOT / f"{Path(filename).stem}_VideoFX_Style_{job_id}.mp4"
             with LOCK: JOBS[job_id] = {"state": "queued", "progress": 0, "message": "في الانتظار..."}
             threading.Thread(target=process, args=(job_id, source, output), daemon=True).start()
             self.send_json({"ok": True, "job": job_id})
