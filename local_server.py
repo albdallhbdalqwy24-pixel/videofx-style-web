@@ -58,11 +58,11 @@ def update(job_id, **values):
 def process(job_id, source, output):
     try:
         meta = probe(source)
-        update(job_id, state="processing", progress=5, message="تطبيق الفلاتر والحدة والنعومة محلياً...")
+        update(job_id, state="processing", progress=5, message="تطبيق فلتر 96625 السينمائي محلياً...")
         # Visual-only chain: dimensions, orientation and frame timing are not changed.
-        # Specialized 96618 Filter: Dark Cinematic Horror/Action Style.
-        # High contrast, crushed blacks, desaturated (monochromatic feel), film grain, and edge sharpening.
-        vf = "hqdn3d=1.5:1.5:3.0:3.0,eq=contrast=1.45:brightness=-0.08:saturation=0.15:gamma=0.9,unsharp=7:7:1.2:7:7:0.5,noise=alls=12:allf=t+u,format=yuv420p"
+        # Reference 96625: monochrome Film Noir grade with crushed blacks,
+        # lifted highlights, soft edge treatment, grain and vignette.
+        vf = "format=gray,eq=contrast=1.50:brightness=-0.05:saturation=0,curves=all='0/0 0.2/0.05 0.5/0.5 0.8/0.95 1/1',noise=alls=15:allf=t+u,vignette=angle=PI/4,format=yuv420p"
         source_rate = meta.get("bitrate_mbps") or 6
         maxrate = max(3.0, min(20.0, source_rate * 1.12))
         command = [
@@ -78,7 +78,7 @@ def process(job_id, source, output):
                 try:
                     seconds = int(line.split("=", 1)[1]) / 1_000_000
                     progress = min(94, 5 + int(seconds / max(meta["duration"], 0.1) * 89))
-                    update(job_id, progress=progress, message="جاري تطبيق VideoFX Style محلياً...")
+                    update(job_id, progress=progress, message="جاري تطبيق فلتر 96625 محلياً...")
                 except ValueError:
                     pass
         if process.wait() != 0 or not output.exists():
