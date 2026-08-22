@@ -1,4 +1,5 @@
-const API_BASE = "https://boqased-alyafai-tiktok-studio.onrender.com"; // Render لمعالجة AI للمقاطع القصيرة
+// المعالجة محلية بالكامل داخل Termux؛ لا نستخدم Render أو Google Cloud.
+const API_BASE = "";
 const input = document.querySelector("#fileInput");
 const dropzone = document.querySelector("#dropzone");
 const fileCard = document.querySelector("#fileCard");
@@ -22,7 +23,7 @@ const formatSize = (bytes) => `${(bytes / 1024 / 1024).toFixed(1)} MB`;
 
 function chooseFile(file) {
   if (!file || !file.type.startsWith("video/")) return setError("اختر ملف فيديو بصيغة MP4 أو MOV أو WebM.");
-  if (file.size > 450 * 1024 * 1024) return setError("الملف أكبر من الحد الآمن للخدمة حالياً. جرّب نسخة أصغر من 450MB.");
+  if (file.size > 450 * 1024 * 1024) return setError("الملف أكبر من الحد الآمن للجوال. جرّب نسخة أصغر من 450MB.");
   selectedFile = file;
   document.querySelector("#fileName").textContent = file.name;
   document.querySelector("#fileSize").textContent = formatSize(file.size);
@@ -44,20 +45,20 @@ async function request(url, options = {}, timeout = 90000) {
 
 async function processVideo() {
   if (!selectedFile) return;
-  processBtn.disabled = true; clearError(); show(progressCard, true); show(resultCard, false); setProgress(5, "جاري تجهيز الملف لعزل اللاعب بالذكاء الاصطناعي...");
+  processBtn.disabled = true; clearError(); show(progressCard, true); show(resultCard, false); setProgress(5, "جاري تجهيز الملف للمعالجة المحلية داخل تيرمكس...");
   try {
     const probeForm = new FormData(); probeForm.append("file", selectedFile, selectedFile.name);
     const probe = await request(`${API_BASE}/probe`, { method: "POST", body: probeForm });
     const meta = await probe.json();
     if (!meta.ok) throw new Error(meta.error || "تعذر تحليل الملف.");
-    setProgress(18, `تم التحليل: ${meta.width || "؟"}×${meta.height || "؟"} — بدء عزل اللاعب وتركيبه فوق الخلفية الضبابية...`);
-    const startForm = new FormData(); startForm.append("file", selectedFile, selectedFile.name); startForm.append("mode", "silhouette"); startForm.append("fps", "auto"); startForm.append("profile", "standard"); startForm.append("tiktok", "off"); startForm.append("codec", "h264");
+    setProgress(18, `تم التحليل: ${meta.width || "؟"}×${meta.height || "؟"} — بدء إنشاء المؤثرات محلياً...`);
+    const startForm = new FormData(); startForm.append("file", selectedFile, selectedFile.name); startForm.append("mode", "local_vfx"); startForm.append("fps", "auto"); startForm.append("profile", "standard"); startForm.append("tiktok", "off"); startForm.append("codec", "h264");
     const startResponse = await request(`${API_BASE}/start`, { method: "POST", body: startForm });
     const start = await startResponse.json();
     if (!start.job) throw new Error(start.error || "لم تبدأ المعالجة.");
     await poll(start.job);
   } catch (error) {
-    setError(error.name === "AbortError" ? "انتهت مهلة الاتصال. جرّب ملفاً أصغر أو أعد المحاولة." : `تعذر تجهيز الفيديو: ${error.message}`);
+    setError(error.name === "AbortError" ? "انتهت مهلة المعالجة المحلية. جرّب ملفاً أقصر أو أعد المحاولة." : `تعذر تجهيز الفيديو محلياً: ${error.message}`);
     show(progressCard, false); processBtn.disabled = false;
   }
 }
@@ -66,7 +67,7 @@ async function poll(jobId) {
   for (;;) {
     const response = await request(`${API_BASE}/progress?id=${encodeURIComponent(jobId)}`, {}, 30000);
     const job = await response.json(); const progress = Number(job.progress || 0);
-    setProgress(Math.max(20, progress), job.message || "جاري عزل اللاعب وإنشاء الخلفية الضبابية...");
+    setProgress(Math.max(20, progress), job.message || "جاري إنشاء المؤثرات محلياً...");
     if (job.state === "done") {
       setProgress(100, "اكتملت المعالجة");
       objectUrl = `${API_BASE}/download?id=${encodeURIComponent(jobId)}`;
